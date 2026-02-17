@@ -1,0 +1,12 @@
+[package]
+name = "todo-app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.53", features = ["derive"] }
+inquire = "0.9.1"
+short-id = "0.4.1"
+cli-table = "0.5"
+sqlite3 = "0.24.0"
+app-path = "1.1.2"
