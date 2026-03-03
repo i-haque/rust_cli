@@ -14,6 +14,7 @@ pub fn read_all_tasks() {
 }
 
 pub fn read_a_task() -> InquireResult<()> {
+    println!();
     let task_id = Text::new("Task Id:").prompt()?;
     let tasks = read_one(&task_id);
     if tasks.is_empty() {
@@ -21,6 +22,7 @@ pub fn read_a_task() -> InquireResult<()> {
     } else {
         print_stdout(tasks.with_title()).unwrap();
     }
+    println!();
 
     Ok(())
 }

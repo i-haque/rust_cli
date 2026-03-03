@@ -1,5 +1,6 @@
 use sqlite3::{self, Connection, Value};
 use std::fs;
+use time::{Date, OffsetDateTime, macros::{format_description, date}};
 
 use crate::tasks::{priority::Priority, status::Status, task::Task};
 
@@ -19,7 +20,7 @@ fn connect_to_db() -> Connection {
     let connection = sqlite3::open(db_path).expect("unable to connect to the database!");
     connection
         .execute(
-            "CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, title TEXT, priority TEXT, status TEXT);",
+            "CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, title TEXT, priority TEXT, status TEXT, created_at TEXT);",
         )
         .expect("uable to create a table!");
     connection
@@ -49,11 +50,12 @@ pub fn id_exists(id: &str) -> bool {
 pub fn create(new_task: Task) {
     let conn = connect_to_db();
     let query = format!(
-        "INSERT INTO tasks (id, title, priority, status) VALUES ('{}', '{}', '{}', '{}');",
+        "INSERT INTO tasks (id, title, priority, status, created_at) VALUES ('{}', '{}', '{}', '{}', '{}');",
         new_task.id,
         new_task.title,
         new_task.priority.to_string(),
-        new_task.status.to_string()
+        new_task.status.to_string(),
+        new_task.created_at.to_string()
     );
     conn.execute(query).unwrap();
 }
@@ -69,15 +71,21 @@ pub fn read_all() -> Vec<Task> {
 
     let mut tasks = Vec::new();
     while let Some(row) = cursor.next().unwrap() {
-        let id = row[0].as_string().unwrap().to_string();
-        let title = row[1].as_string().unwrap().to_string();
+        let id: String = row[0].as_string().unwrap().to_owned();
+        let title: String = row[1].as_string().unwrap().to_owned();
         let priority: Priority = row[2].as_string().unwrap().parse().unwrap();
         let status: Status = row[3].as_string().unwrap().parse().unwrap();
+        let created_at: Date = Date::parse(
+            row[4].as_string().unwrap_or(&date!(9999-12-31).to_string()),
+            format_description!("[year]-[month]-[day]"),
+        )
+        .unwrap();
         let task = Task {
             id,
             title,
             priority,
             status,
+            created_at,
         };
         tasks.push(task);
     }
@@ -94,15 +102,21 @@ pub fn read_one(id: &str) -> Vec<Task> {
 
     let mut tasks = Vec::new();
     while let Some(row) = cursor.next().unwrap() {
-        let id = row[0].as_string().unwrap().to_owned();
-        let title = row[1].as_string().unwrap().to_owned();
+        let id: String = row[0].as_string().unwrap().to_owned();
+        let title: String = row[1].as_string().unwrap().to_owned();
         let priority: Priority = row[2].as_string().unwrap().parse().unwrap();
         let status: Status = row[3].as_string().unwrap().parse().unwrap();
+        let created_at: Date = Date::parse(
+            row[4].as_string().unwrap_or(&date!(9999-12-31).to_string()),
+            format_description!("[year]-[month]-[day]"),
+        )
+        .unwrap_or(OffsetDateTime::now_utc().date());
         let task = Task {
             id,
             title,
             priority,
             status,
+            created_at,
         };
         tasks.push(task);
     }
@@ -161,4 +175,23 @@ pub fn delete_one(id: &str) {
     let conn = connect_to_db();
     let query = format!("DELETE FROM tasks WHERE id = '{}';", id);
     conn.execute(query).unwrap();
+}
+
+// DROP the table
+
+pub fn migrate_db() {
+    // connect to db
+    let conn = connect_to_db();
+
+    // copy all data
+    let migration_query = 
+    "
+    BEGIN TRANSACTION;
+    ALTER TABLE tasks RENAME TO temp_tasks;
+    CREATE TABLE tasks (id TEXT PRIMARY KEY, title TEXT, priority TEXT, status TEXT, ceated_at TEXT);
+    INSERT INTO tasks (id, title, priority, status) SELECT id, title, priority, status FROM temp_tasks;
+    DROP TABLE temp_tasks;
+    COMMIT;
+    ";
+    conn.execute(migration_query).unwrap();
 }

@@ -10,3 +10,4 @@ short-id = "0.4.1"
 cli-table = "0.5"
 sqlite3 = "0.24.0"
 app-path = "1.1.2"
+time = { version = "0.3.47", features = ["macros", "formatting", "parsing"] }
