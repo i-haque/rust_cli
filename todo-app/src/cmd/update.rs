@@ -1,6 +1,6 @@
+use crate::db::update_task::{change_priority, mark_done};
+use crate::db::utils::id_exists;
 use inquire::{Select, Text};
-
-use crate::db::crud::{change_priority, id_exists, mark_done};
 
 pub fn choose_option() {
     println!();

@@ -7,8 +7,6 @@ mod tasks;
 mod cmd;
 use cmd::{create, delete, read, update};
 
-use crate::cmd::migrate;
-
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Cli {
@@ -30,8 +28,6 @@ enum Commands {
     DeleteTasks,
     /// Delete a particular task with an ID
     DeleteTask,
-    /// DB migration - Run this command after an update
-    MigrateData,
 }
 
 fn main() -> InquireResult<()> {
@@ -55,9 +51,6 @@ fn main() -> InquireResult<()> {
         }
         Some(Commands::DeleteTask) => {
             delete::delete_a_task();
-        }
-        Some(Commands::MigrateData) => {
-            migrate::migrate_data();
         }
         None => println!("Use --help for more info!"),
     }

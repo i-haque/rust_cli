@@ -1,6 +1,6 @@
+use crate::db::delete_task::{delete_all, delete_one};
+use crate::db::utils::id_exists;
 use inquire::{Confirm, Text};
-
-use crate::db::crud::{delete_all, delete_one, id_exists};
 
 pub fn delete_all_tasks() {
     println!();

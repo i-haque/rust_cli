@@ -1,4 +1,4 @@
-use crate::db::crud::{read_all, read_one};
+use crate::db::read_task::{read_all, read_one};
 use cli_table::{WithTitle, print_stdout};
 use inquire::{Text, error::InquireResult};
 

@@ -1,4 +1,4 @@
-use crate::db::crud::create;
+use crate::db::create_task::create;
 use crate::tasks::{priority::Priority, status::Status, task::Task};
 use inquire::{Select, Text, error::InquireResult};
 use short_id::short_id_ordered;
